@@ -175,7 +175,8 @@ export function createTrustRouter(): Router {
       if (err.code === "23505") {
         return res.status(409).json({ error: "Duplicate event (idempotency conflict)" });
       }
-      throw e;
+      console.error("POST /trust/events error:", e);
+      res.status(500).json({ error: "Internal server error", message: "Event ingest failed" });
     }
   });
 
@@ -186,8 +187,13 @@ export function createTrustRouter(): Router {
     if (!parsed.success) {
       return res.status(400).json({ error: "Validation failed", details: parsed.error.flatten() });
     }
-    const result = await ingestEventBatch(parsed.data.events);
-    res.status(201).json(result);
+    try {
+      const result = await ingestEventBatch(parsed.data.events);
+      res.status(201).json(result);
+    } catch (e: unknown) {
+      console.error("POST /trust/events/batch error:", e);
+      res.status(500).json({ error: "Internal server error", message: "Batch ingest failed" });
+    }
   });
 
   return router;

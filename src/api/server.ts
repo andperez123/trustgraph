@@ -20,6 +20,12 @@ app.use(createPublicRouter());
 app.use(createTrustRouter());
 app.use(createWebhooksRouter());
 
+// Global error handler — prevents unhandled rejections from returning 502
+app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 const host = process.env.HOST ?? "0.0.0.0";
 const server = app.listen(config.port, host, () => {
   console.log(`TrustGraph API listening on ${host}:${config.port}`);

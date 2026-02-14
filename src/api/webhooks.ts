@@ -75,9 +75,14 @@ export function createWebhooksRouter(): Router {
         details: parsed.error.flatten(),
       });
     }
-    const events: IngestEventInput[] = parsed.data.events.map(toIngestInput);
-    const result = await ingestEventBatch(events);
-    res.status(201).json(result);
+    try {
+      const events: IngestEventInput[] = parsed.data.events.map(toIngestInput);
+      const result = await ingestEventBatch(events);
+      res.status(201).json(result);
+    } catch (e: unknown) {
+      console.error("POST /trust/webhooks/capnet error:", e);
+      res.status(500).json({ error: "Internal server error", message: "Webhook ingest failed" });
+    }
   });
 
   return router;
