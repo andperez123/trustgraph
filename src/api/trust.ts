@@ -176,7 +176,12 @@ export function createTrustRouter(): Router {
         return res.status(409).json({ error: "Duplicate event (idempotency conflict)" });
       }
       console.error("POST /trust/events error:", err.message ?? err, e);
-      res.status(500).json({ error: "Internal server error", message: "Event ingest failed" });
+      res.status(500).json({
+        error: "Internal server error",
+        message: "Event ingest failed",
+        code: err.code ?? undefined,
+        detail: err.message ?? undefined,
+      });
     }
   });
 
@@ -191,9 +196,14 @@ export function createTrustRouter(): Router {
       const result = await ingestEventBatch(parsed.data.events);
       res.status(201).json(result);
     } catch (e: unknown) {
-      const err = e as { message?: string };
+      const err = e as { code?: string; message?: string };
       console.error("POST /trust/events/batch error:", err.message ?? err, e);
-      res.status(500).json({ error: "Internal server error", message: "Batch ingest failed" });
+      res.status(500).json({
+        error: "Internal server error",
+        message: "Batch ingest failed",
+        code: err.code ?? undefined,
+        detail: err.message ?? undefined,
+      });
     }
   });
 
