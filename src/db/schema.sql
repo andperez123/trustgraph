@@ -45,7 +45,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_trust_events_external_ref
 CREATE TABLE IF NOT EXISTS trust_scores (
   subject_agent_id TEXT NOT NULL REFERENCES agents(id),
   skill_id TEXT,
-  window TEXT NOT NULL,
+  "window" TEXT NOT NULL,
   reliability REAL NOT NULL,
   integrity REAL NOT NULL,
   timeliness REAL NOT NULL,
@@ -53,11 +53,11 @@ CREATE TABLE IF NOT EXISTS trust_scores (
   volume INT NOT NULL,
   value_usd_micros BIGINT NOT NULL DEFAULT 0,
   updated_at TIMESTAMPTZ DEFAULT now(),
-  PRIMARY KEY (subject_agent_id, skill_id, window)
+  PRIMARY KEY (subject_agent_id, skill_id, "window")
 );
 
 CREATE INDEX IF NOT EXISTS idx_trust_scores_updated ON trust_scores(updated_at);
-CREATE INDEX IF NOT EXISTS idx_trust_scores_composite ON trust_scores(window, skill_id, composite DESC);
+CREATE INDEX IF NOT EXISTS idx_trust_scores_composite ON trust_scores("window", skill_id, composite DESC);
 
 -- D) operators — humans who run agents (for operator dashboard)
 CREATE TABLE IF NOT EXISTS operators (
@@ -94,12 +94,12 @@ CREATE TABLE IF NOT EXISTS agent_badges (
   subject_agent_id TEXT NOT NULL REFERENCES agents(id),
   badge_slug TEXT NOT NULL REFERENCES badge_definitions(slug),
   skill_id TEXT,
-  window TEXT NOT NULL,
+  "window" TEXT NOT NULL,
   awarded_at TIMESTAMPTZ DEFAULT now(),
-  PRIMARY KEY (subject_agent_id, badge_slug, skill_id, window)
+  PRIMARY KEY (subject_agent_id, badge_slug, skill_id, "window")
 );
 
-CREATE INDEX IF NOT EXISTS idx_agent_badges_agent ON agent_badges(subject_agent_id, window);
+CREATE INDEX IF NOT EXISTS idx_agent_badges_agent ON agent_badges(subject_agent_id, "window");
 
 -- G) trusted_sources — anti-gaming: source credibility
 CREATE TABLE IF NOT EXISTS trusted_sources (
@@ -110,14 +110,14 @@ CREATE TABLE IF NOT EXISTS trusted_sources (
 
 -- H) ranking_config — min events/sources to appear on leaderboard
 CREATE TABLE IF NOT EXISTS ranking_config (
-  window TEXT PRIMARY KEY,
+  "window" TEXT PRIMARY KEY,
   min_events INT NOT NULL DEFAULT 5,
   min_unique_sources INT NOT NULL DEFAULT 2
 );
 
-INSERT INTO ranking_config (window, min_events, min_unique_sources) VALUES
+INSERT INTO ranking_config ("window", min_events, min_unique_sources) VALUES
   ('7d', 3, 1),
   ('30d', 5, 2),
   ('180d', 10, 2),
   ('all', 15, 2)
-ON CONFLICT (window) DO NOTHING;
+ON CONFLICT ("window") DO NOTHING;

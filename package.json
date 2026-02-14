@@ -4,11 +4,14 @@
   "description": "Trust & risk layer for WakeNet + Taskmint + AgentPay — machine-first infrastructure",
   "type": "module",
   "main": "dist/index.js",
-  "repository": { "type": "git", "url": "https://github.com/andperez123/trustgraph" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andperez123/trustgraph"
+  },
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/api/server.js",
     "dev": "tsx watch src/index.ts",
     "dev:api": "tsx watch src/api/server.ts",
     "dev:mcp": "tsx watch src/mcp/server.ts",
@@ -22,6 +25,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",
+    "dotenv": "^17.3.1",
     "express": "^4.21.0",
     "pg": "^8.13.0",
     "uuid": "^10.0.0",

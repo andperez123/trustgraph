@@ -203,3 +203,55 @@ export async function recomputeAllScores(): Promise<{ agents: number }> {
   }
   return { agents: seen.size };
 }
+
+/** Keys (subject_agent_id, skill_id) that need recompute: no score row or latest event is newer than score.updated_at. */
+export async function getStaleAgentScoreKeys(
+  limit: number
+): Promise<{ subject_agent_id: string; skill_id: string | null }[]> {
+  const { rows } = await query<{ subject_agent_id: string; skill_id: string | null }>(
+    `WITH latest_events AS (
+       SELECT subject_agent_id, skill_id, MAX(occurred_at) AS latest_occurred
+       FROM trust_events
+       GROUP BY subject_agent_id, skill_id
+     ),
+     score_updated AS (
+       SELECT subject_agent_id, skill_id, updated_at
+       FROM trust_scores
+       WHERE window = '30d'
+     )
+     SELECT e.subject_agent_id, e.skill_id
+     FROM latest_events e
+     LEFT JOIN score_updated s ON e.subject_agent_id = s.subject_agent_id
+       AND e.skill_id IS NOT DISTINCT FROM s.skill_id
+     WHERE s.updated_at IS NULL OR e.latest_occurred > s.updated_at
+     ORDER BY e.latest_occurred DESC NULLS LAST
+     LIMIT $1`,
+    [limit]
+  );
+  return rows;
+}
+
+/**
+ * Recompute only stale agent/skill pairs (events newer than score or no score).
+ * Processes up to batchSize pairs; each pair is one short transaction. Avoids full-table lock.
+ * Use batchSize 0 to do nothing (lazy-only mode).
+ */
+export async function recomputeStaleScores(batchSize: number): Promise<{
+  processed: number;
+  message: string;
+}> {
+  if (batchSize <= 0) {
+    return { processed: 0, message: "Lazy-only: no batch recompute (scores updated on ingest)." };
+  }
+  const stale = await getStaleAgentScoreKeys(batchSize);
+  for (const r of stale) {
+    await recomputeScoresForAgent(r.subject_agent_id, r.skill_id);
+  }
+  return {
+    processed: stale.length,
+    message:
+      stale.length === 0
+        ? "No stale scores to recompute."
+        : `Recomputed ${stale.length} agent/skill score(s).`,
+  };
+}

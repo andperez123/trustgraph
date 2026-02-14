@@ -2,6 +2,7 @@
  * Trust read/write API handlers.
  * GET /trust/agents/:agentId?window=30d
  * GET /trust/agents/:agentId/skills/:skillId?window=30d
+ * GET /trust/gate/dispatch?agentId=...&window=30d  — Gatekeeper for Runtime (reliability < 0.5 → refuse)
  * POST /trust/events (optional TRUSTGRAPH_WRITE_KEY)
  * POST /trust/events/batch
  */
@@ -9,6 +10,7 @@
 import { Router, type Request, type Response } from "express";
 import { query } from "../db/client.js";
 import { ingestEvent, ingestEventBatch } from "../events/ingest.js";
+import { checkDispatchGate } from "../gatekeeper/dispatch.js";
 import { config } from "../config.js";
 import type { TrustScoresResponse, ScoreWindow } from "../types.js";
 import { SCORE_WINDOWS } from "../types.js";
@@ -143,6 +145,20 @@ export function createTrustRouter(): Router {
       res.json(body);
     }
   );
+
+  /** GET /trust/gate/dispatch?agentId=...&window=30d — Runtime calls before dispatch; reliability < 0.5 → refuse */
+  router.get("/trust/gate/dispatch", async (req: Request, res: Response) => {
+    const agentId = req.query.agentId as string;
+    const window = (req.query.window as string) || DEFAULT_WINDOW;
+    if (!agentId || typeof agentId !== "string") {
+      return res.status(400).json({ error: "Missing or invalid agentId query parameter" });
+    }
+    if (!SCORE_WINDOWS.includes(window as ScoreWindow)) {
+      return res.status(400).json({ error: "Invalid window", allowed: SCORE_WINDOWS });
+    }
+    const result = await checkDispatchGate(agentId, { window });
+    return res.status(200).json(result);
+  });
 
   /** POST /trust/events */
   router.post("/trust/events", async (req: Request, res: Response) => {

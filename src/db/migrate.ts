@@ -3,6 +3,7 @@
  * Run schema.sql against DATABASE_URL.
  * Usage: npm run db:migrate  (or tsx src/db/migrate.ts)
  */
+import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";

@@ -4,6 +4,7 @@
  * Tools: trust_get_agent_score, trust_get_skill_score, trust_health, trust_emit_event, trust_emit_events_batch
  * Read tools require no key; write tools require TRUSTGRAPH_WRITE_KEY only if TRUSTGRAPH_ENFORCE_WRITE_KEY=true.
  */
+import "dotenv/config";
 import { Server } from "@modelcontextprotocol/sdk/server";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
