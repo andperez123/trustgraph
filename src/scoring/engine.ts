@@ -171,9 +171,9 @@ export async function recomputeScoresForAgent(
     });
 
     await pool.query(
-      `INSERT INTO trust_scores (subject_agent_id, skill_id, window, reliability, integrity, timeliness, composite, volume, value_usd_micros, updated_at)
+      `INSERT INTO trust_scores (subject_agent_id, skill_id, "window", reliability, integrity, timeliness, composite, volume, value_usd_micros, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
-       ON CONFLICT (subject_agent_id, skill_id, window)
+       ON CONFLICT (subject_agent_id, skill_id, "window")
        DO UPDATE SET reliability = $4, integrity = $5, timeliness = $6, composite = $7, volume = $8, value_usd_micros = $9, updated_at = now()`,
       [
         subjectAgentId,
@@ -217,7 +217,7 @@ export async function getStaleAgentScoreKeys(
      score_updated AS (
        SELECT subject_agent_id, skill_id, updated_at
        FROM trust_scores
-       WHERE window = '30d'
+       WHERE "window" = '30d'
      )
      SELECT e.subject_agent_id, e.skill_id
      FROM latest_events e

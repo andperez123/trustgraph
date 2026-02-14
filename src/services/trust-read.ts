@@ -35,7 +35,7 @@ export async function getAgentScore(
   }>(
     `SELECT reliability, integrity, timeliness, composite, volume, updated_at
      FROM trust_scores
-     WHERE subject_agent_id = $1 AND skill_id IS NULL AND window = $2`,
+     WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2`,
     [agentId, window]
   );
   if (rows.length === 0) return defaultScores;
@@ -70,7 +70,7 @@ export async function getSkillScore(
   }>(
     `SELECT reliability, integrity, timeliness, composite, volume, updated_at
      FROM trust_scores
-     WHERE subject_agent_id = $1 AND skill_id = $2 AND window = $3`,
+     WHERE subject_agent_id = $1 AND skill_id = $2 AND "window" = $3`,
     [agentId, skillId, window]
   );
   if (rows.length === 0) return defaultScores;

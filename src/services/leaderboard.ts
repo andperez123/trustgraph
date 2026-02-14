@@ -37,7 +37,7 @@ async function getRankingConfig(
   window: string
 ): Promise<{ min_events: number; min_unique_sources: number }> {
   const { rows } = await query<{ min_events: number; min_unique_sources: number }>(
-    "SELECT min_events, min_unique_sources FROM ranking_config WHERE window = $1",
+    'SELECT min_events, min_unique_sources FROM ranking_config WHERE "window" = $1',
     [window]
   );
   if (rows.length === 0) return { min_events: 5, min_unique_sources: 2 };
@@ -75,7 +75,7 @@ export async function getRank(
              COALESCE(es.unique_sources, 0) AS unique_sources
       FROM trust_scores ts
       LEFT JOIN event_sources es ON es.subject_agent_id = ts.subject_agent_id
-      WHERE ts.window = $1 AND ts.volume >= $2 ${skillCondition}
+      WHERE ts."window" = $1 AND ts.volume >= $2 ${skillCondition}
     ),
     filtered AS (
       SELECT * FROM eligible WHERE unique_sources >= $3
@@ -148,7 +148,7 @@ export async function getLeaderboard(
              COALESCE(es.unique_sources, 0) AS unique_sources
       FROM trust_scores ts
       LEFT JOIN event_sources es ON es.subject_agent_id = ts.subject_agent_id
-      WHERE ts.window = $1 AND ts.volume >= $2 ${skillCondition} ${verifiedJoin}
+      WHERE ts."window" = $1 AND ts.volume >= $2 ${skillCondition} ${verifiedJoin}
     ),
     filtered AS (
       SELECT * FROM eligible WHERE unique_sources >= $3
@@ -161,7 +161,7 @@ export async function getLeaderboard(
     with_badges AS (
       SELECT r.*, (
         SELECT array_agg(ab.badge_slug) FROM agent_badges ab
-        WHERE ab.subject_agent_id = r.subject_agent_id AND ab.window = $1
+        WHERE ab.subject_agent_id = r.subject_agent_id AND ab."window" = $1
           AND (ab.skill_id IS NOT DISTINCT FROM ${skillId ? "$4" : "NULL"})
       ) AS badge_slugs
       FROM ranked r
@@ -199,7 +199,7 @@ export async function computeBadgesForAgent(
     composite: number;
     volume: number;
   }>(
-    "SELECT reliability, integrity, timeliness, composite, volume FROM trust_scores WHERE subject_agent_id = $1 AND skill_id IS NULL AND window = $2",
+    'SELECT reliability, integrity, timeliness, composite, volume FROM trust_scores WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2',
     [agentId, window]
   );
   if (scoreRows.length === 0) return [];
@@ -285,7 +285,7 @@ export async function getAgentProfilePublic(
     volume: number;
     updated_at: Date;
   }>(
-    "SELECT reliability, integrity, timeliness, composite, volume, updated_at FROM trust_scores WHERE subject_agent_id = $1 AND skill_id IS NULL AND window = $2",
+    'SELECT reliability, integrity, timeliness, composite, volume, updated_at FROM trust_scores WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2',
     [agentId, window]
   );
 

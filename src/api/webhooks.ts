@@ -80,7 +80,8 @@ export function createWebhooksRouter(): Router {
       const result = await ingestEventBatch(events);
       res.status(201).json(result);
     } catch (e: unknown) {
-      console.error("POST /trust/webhooks/capnet error:", e);
+      const err = e as { message?: string };
+      console.error("POST /trust/webhooks/capnet error:", err.message ?? err, e);
       res.status(500).json({ error: "Internal server error", message: "Webhook ingest failed" });
     }
   });

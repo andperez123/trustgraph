@@ -79,6 +79,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for full setup and conventions.
 ## Docs
 
 - [MCP server & tools](docs/MCP.md)
+- [Clawdbot (OpenClaw) setup & smoke test](docs/CLAWDBOT.md)
 - [Ecosystem integrations (WakeNet, Taskmint, AgentPay)](docs/integrations.md)
 - [OpenClaw skill](openclaw/skills/trustgraph/SKILL.md) — when to query trust and enforcement patterns
 

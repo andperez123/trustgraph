@@ -68,7 +68,7 @@ export function createTrustRouter(): Router {
     }>(
       `SELECT reliability, integrity, timeliness, composite, volume, updated_at
        FROM trust_scores
-       WHERE subject_agent_id = $1 AND skill_id IS NULL AND window = $2`,
+       WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2`,
       [agentId, window]
     );
     if (rows.length === 0) {
@@ -116,7 +116,7 @@ export function createTrustRouter(): Router {
       }>(
         `SELECT reliability, integrity, timeliness, composite, volume, updated_at
          FROM trust_scores
-         WHERE subject_agent_id = $1 AND skill_id = $2 AND window = $3`,
+         WHERE subject_agent_id = $1 AND skill_id = $2 AND "window" = $3`,
         [agentId, skillId, window]
       );
       if (rows.length === 0) {
@@ -171,11 +171,11 @@ export function createTrustRouter(): Router {
       const { id } = await ingestEvent(parsed.data);
       res.status(201).json({ id });
     } catch (e: unknown) {
-      const err = e as { code?: string };
+      const err = e as { code?: string; message?: string };
       if (err.code === "23505") {
         return res.status(409).json({ error: "Duplicate event (idempotency conflict)" });
       }
-      console.error("POST /trust/events error:", e);
+      console.error("POST /trust/events error:", err.message ?? err, e);
       res.status(500).json({ error: "Internal server error", message: "Event ingest failed" });
     }
   });
@@ -191,7 +191,8 @@ export function createTrustRouter(): Router {
       const result = await ingestEventBatch(parsed.data.events);
       res.status(201).json(result);
     } catch (e: unknown) {
-      console.error("POST /trust/events/batch error:", e);
+      const err = e as { message?: string };
+      console.error("POST /trust/events/batch error:", err.message ?? err, e);
       res.status(500).json({ error: "Internal server error", message: "Batch ingest failed" });
     }
   });
