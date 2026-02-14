@@ -68,7 +68,7 @@ export function createTrustRouter(): Router {
     }>(
       `SELECT reliability, integrity, timeliness, composite, volume, updated_at
        FROM trust_scores
-       WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2`,
+       WHERE subject_agent_id = $1 AND (skill_id IS NULL OR skill_id = '') AND "window" = $2`,
       [agentId, window]
     );
     if (rows.length === 0) {

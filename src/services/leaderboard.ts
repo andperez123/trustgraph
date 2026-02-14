@@ -57,7 +57,7 @@ export async function getRank(
       ? "true"
       : `te.occurred_at >= now() - interval '${interval}'`;
 
-  const skillCondition = skillId ? "AND ts.skill_id = $4" : "AND ts.skill_id IS NULL";
+  const skillCondition = skillId ? "AND ts.skill_id = $4" : "AND (ts.skill_id IS NULL OR ts.skill_id = '')";
   const params: (string | number)[] = [window, cfg.min_events, cfg.min_unique_sources];
   if (skillId) params.push(skillId);
   params.push(agentId);
@@ -112,7 +112,7 @@ export async function getLeaderboard(
       ? "true"
       : `te.occurred_at >= now() - interval '${interval}'`;
 
-  const skillCondition = skillId ? "AND ts.skill_id = $4" : "AND ts.skill_id IS NULL";
+  const skillCondition = skillId ? "AND ts.skill_id = $4" : "AND (ts.skill_id IS NULL OR ts.skill_id = '')";
   const params: (string | number)[] = [window, cfg.min_events, cfg.min_unique_sources];
   if (skillId) params.push(skillId);
   params.push(limit);
@@ -199,7 +199,7 @@ export async function computeBadgesForAgent(
     composite: number;
     volume: number;
   }>(
-    'SELECT reliability, integrity, timeliness, composite, volume FROM trust_scores WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2',
+    'SELECT reliability, integrity, timeliness, composite, volume FROM trust_scores WHERE subject_agent_id = $1 AND (skill_id IS NULL OR skill_id = \'\') AND "window" = $2',
     [agentId, window]
   );
   if (scoreRows.length === 0) return [];
@@ -285,7 +285,7 @@ export async function getAgentProfilePublic(
     volume: number;
     updated_at: Date;
   }>(
-    'SELECT reliability, integrity, timeliness, composite, volume, updated_at FROM trust_scores WHERE subject_agent_id = $1 AND skill_id IS NULL AND "window" = $2',
+    'SELECT reliability, integrity, timeliness, composite, volume, updated_at FROM trust_scores WHERE subject_agent_id = $1 AND (skill_id IS NULL OR skill_id = \'\') AND "window" = $2',
     [agentId, window]
   );
 

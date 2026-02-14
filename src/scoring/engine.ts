@@ -177,7 +177,7 @@ export async function recomputeScoresForAgent(
        DO UPDATE SET reliability = $4, integrity = $5, timeliness = $6, composite = $7, volume = $8, value_usd_micros = $9, updated_at = now()`,
       [
         subjectAgentId,
-        skillId,
+        skillId ?? "", // PK requires non-null; use "" for agent-level (all skills)
         window,
         result.reliability,
         result.integrity,
@@ -222,7 +222,7 @@ export async function getStaleAgentScoreKeys(
      SELECT e.subject_agent_id, e.skill_id
      FROM latest_events e
      LEFT JOIN score_updated s ON e.subject_agent_id = s.subject_agent_id
-       AND e.skill_id IS NOT DISTINCT FROM s.skill_id
+       AND COALESCE(e.skill_id, '') = COALESCE(s.skill_id, '')
      WHERE s.updated_at IS NULL OR e.latest_occurred > s.updated_at
      ORDER BY e.latest_occurred DESC NULLS LAST
      LIMIT $1`,
