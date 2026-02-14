@@ -12,9 +12,9 @@ import { config } from "../config.js";
 const app = express();
 app.use(express.json());
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "trustgraph" });
-});
+const healthPayload = { status: "ok", service: "trustgraph" };
+app.get("/health", (_req, res) => res.json(healthPayload));
+app.get("/trust/health", (_req, res) => res.json(healthPayload));
 
 app.use(createPublicRouter());
 app.use(createTrustRouter());
